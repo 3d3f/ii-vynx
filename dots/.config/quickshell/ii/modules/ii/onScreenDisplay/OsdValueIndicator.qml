@@ -89,6 +89,8 @@ Item {
                         color: Appearance.colors.colOnLayer0
                         font.pixelSize: Appearance.font.pixelSize.small
                         Layout.fillWidth: false
+                        Layout.preferredWidth: 30
+                        horizontalAlignment: Text.AlignRight
                         text: Math.round(root.value * 100)
                     }
                 }
