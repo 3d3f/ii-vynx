@@ -116,7 +116,7 @@ RowLayout {
         }
         text: "image_search"
         StyledToolTip {
-            text: Translation.tr("Google Lens")
+            text: Translation.tr("Google Lens");
             y: parent.height + 3
         }
     }
@@ -139,7 +139,7 @@ RowLayout {
         text: "music_cast"
 
         StyledToolTip {
-            text: Translation.tr("Recognize music")
+            text: Translation.tr("Recognize music");
             y: parent.height + 3
         }
 
