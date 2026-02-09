@@ -58,7 +58,6 @@ Scope {
         }
 
         Behavior on scaleAnimated {
-            enabled: !GlobalStates.overviewOpen 
             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(root)
         }
 
