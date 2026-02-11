@@ -133,6 +133,7 @@ Item {
             name: "clear",
             description: Translation.tr("Clear chat history"),
             execute: () => {
+
                 Ai.clearMessages();
             }
         },
@@ -425,71 +426,90 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
 
         Loader {
             id: modelAndProviderLoader
-            Layout.fillWidth: true
+            width: item?.implicitWidth
             height: item?.implicitHeight
+            Layout.alignment: Qt.AlignHCenter
 
             active: Config.options.sidebar.ai.showProviderAndModelButtons && Ai.messageIDs.length === 0
             visible: active
 
             sourceComponent: Item {
-                Layout.fillWidth: true
+                implicitWidth: contentLayout.implicitWidth
                 implicitHeight: contentLayout.implicitHeight
+                anchors.horizontalCenter: parent.horizontalCenter
 
                 ColumnLayout {
                     id: contentLayout
-                    Layout.fillWidth: true
+                    width: 330
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     ConfigSelectionArray {
                         id: providerSelector
                         Layout.alignment: Qt.AlignHCenter
+                        width: parent.width
 
                         currentValue: Persistent.states.ai.provider
                         onSelected: newValue => {
                             Persistent.states.ai.provider = newValue;
+                            Persistent.states.ai.model = Ai.modelsOfProviders[providerSelector.currentValue][0].value
                         }
-                        options: [
-                            {
+                        
+                        
+                        property var allProviderOptions: ({
+                            "google": {
                                 displayName: "Google",
                                 symbol: "spark-symbolic",
                                 value: "google"
                             },
-                            {
+                            "openrouter": {
                                 displayName: "OpenRouter",
                                 symbol: "openrouter-symbolic",
                                 value: "openrouter"
                             },
-                            {
+                            "mistral": {
                                 displayName: "Mistral",
                                 symbol: "mistral-symbolic",
                                 value: "mistral"
                             }
-                        ]
+                        })
+
+                        readonly property list<string> showProviders: Config.options.sidebar.ai.showProviders
+                        
+                        options: {
+                            var result = [];
+                            for (var i = 0; i < showProviders.length; i++) {
+                                var providerKey = showProviders[i];
+                                if (allProviderOptions[providerKey]) {
+                                    result.push(allProviderOptions[providerKey]);
+                                }
+                            }
+                            return result;
+                        }
                     }
+
 
                     StyledComboBox {
                         id: modelSelector
+                        width: parent.width
 
                         buttonIcon: "wand_stars"
                         textRole: "title"
                         model: Ai.modelsOfProviders[providerSelector.currentValue]
                         enabled: true
-                        currentIndex: getCurrentIndex()
-
-                        function getCurrentIndex() {
-                            for (var i = 0; i < Ai.modelsOfProviders[providerSelector.currentValue].length; i++) {
-                                if (Ai.modelsOfProviders[providerSelector.currentValue][i].value === Persistent.states.ai.model) {
-                                    return i
+                        currentIndex: {
+                            const models = Ai.modelsOfProviders[providerSelector.currentValue];
+                            for (var i = 0; i < models.length; i++) {
+                                if (models[i].value === Persistent.states.ai.model) {
+                                    return i;
                                 }
                             }
-                            return 0
+                            return 0;
                         }
 
                         function updateModel(index = 0) {
                             Persistent.states.ai.model = Ai.modelsOfProviders[providerSelector.currentValue][index].value
                         }
 
-                        onModelChanged: updateModel()
                         onActivated: index => updateModel(index)
                     }
                 }
