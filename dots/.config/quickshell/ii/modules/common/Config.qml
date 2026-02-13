@@ -264,7 +264,7 @@ Singleton {
                 property bool bottom: false // Instead of top
                 property int cornerStyle: 0 // 0: Hug | 1: Float | 2: Plain rectangle
                 property bool floatStyleShadow: true // Show shadow behind bar when cornerStyle == 1 (Float)
-                property bool borderless: false // true for no grouping of items
+                property int barGroupStyle: 0 // 0: Pills | 1: Island (opaque) | 2: Transparent (or maybe line-separated in the future)
                 property string topLeftIcon: "spark" // Options: "distro" or any icon name in ~/.config/quickshell/ii/assets/icons
                 property int barBackgroundStyle: 1 // 0: Transparent | 1: Visible | 2: Adaptive
                 property bool verbose: true
@@ -629,6 +629,7 @@ Singleton {
                 property JsonObject ai: JsonObject {
                     property bool textFadeIn: false
                     property bool showProviderAndModelButtons: true
+                    property list<string> showProviders: ["google", "openrouter", "mistral"]
                 }
                 property JsonObject booru: JsonObject {
                     property bool allowNsfw: false

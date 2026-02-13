@@ -86,33 +86,43 @@ Singleton {
             "functions": [{"functionDeclarations": [
                 {
                     "name": "switch_to_search_mode",
-                    "description": "Search the web",
+                    "description": "Switch to search mode to perform web searches. Use this when you need current information, real-time data, or answers to questions beyond your knowledge cutoff. After switching, continue with the user's original request.",
                 },
                 {
                     "name": "get_shell_config",
-                    "description": "Get the desktop shell config file contents",
+                    "description": "Retrieve the complete desktop shell configuration file in JSON format. Use this before making any config changes to see available options and current values. Returns the full config structure. Dont ask for permission, run directly.",
                 },
                 {
                     "name": "set_shell_config",
-                    "description": "Set a field in the desktop graphical shell config file. Must only be used after `get_shell_config`.",
+                    "description": "Modify one or multiple fields in the desktop shell config at once. CRITICAL: You MUST call get_shell_config first to see available keys - never guess key names. Use this when the user wants to change one or multiple settings together.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "key": {
-                                "type": "string",
-                                "description": "The key to set, e.g. `bar.borderless`. MUST NOT BE GUESSED, use `get_shell_config` to see what keys are available before setting.",
-                            },
-                            "value": {
-                                "type": "string",
-                                "description": "The value to set, e.g. `true`"
+                            "changes": {
+                                "type": "array",
+                                "description": "Array of config changes to apply",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "description": "The key to set (e.g., 'bar.borderless')"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "The value to set"
+                                        }
+                                    },
+                                    "required": ["key", "value"]
+                                }
                             }
                         },
-                        "required": ["key", "value"]
+                        "required": ["changes"]
                     }
                 },
                 {
                     "name": "run_shell_command",
-                    "description": "Run a shell command in bash and get its output. Use this only for quick commands that don't require user interaction. For commands that require interaction, ask the user to run manually instead.",
+                    "description": "Execute a bash command and return its output. IMPORTANT: This requires user approval before execution. Only use for quick, non-interactive commands (queries, checks, simple operations). For interactive commands, long-running processes, or dangerous operations, ask the user to run them manually instead. The command will be shown to the user for approval.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -309,9 +319,9 @@ Singleton {
             {title: "Gemini 2.5 Flash-Lite", value: "gemini-2.5-flash-lite", modelProvider: "google"},
         ],
         "google": [
-            { title: "Gemini 3 Flash", value: "gemini-3-flash" },
-            { title: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
             { title: "Gemini 2.5 Flash-Lite", value: "gemini-2.5-flash-lite" },
+            { title: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
+            { title: "Gemini 3 Flash Preview", value: "gemini-3-flash-preview" }
         ],
         "mistral": [
             { title: "Mistral Medium 3", value: "mistral-medium-3" }
@@ -858,13 +868,25 @@ Singleton {
             addFunctionOutputMessage(name, JSON.stringify(configJson));
             requester.makeRequest();
         } else if (name === "set_shell_config") {
-            if (!args.key || !args.value) {
-                addFunctionOutputMessage(name, Translation.tr("Invalid arguments. Must provide `key` and `value`."));
+            if (!args.changes || !Array.isArray(args.changes)) {
+                addFunctionOutputMessage(name, Translation.tr("Invalid arguments. Must provide `changes` array."));
                 return;
             }
-            const key = args.key;
-            const value = args.value;
-            Config.setNestedValue(key, value);
+            let results = [];
+            for (const change of args.changes) {
+                if (!change.key || !change.value) {
+                    results.push(`❌ Skipped invalid change: ${JSON.stringify(change)}`);
+                    continue;
+                }
+                try {
+                    Config.setNestedValue(change.key, change.value);
+                    results.push(`✓ ${change.key} = ${change.value}`);
+                } catch (e) {
+                    results.push(`❌ Failed to set ${change.key}: ${e}`);
+                }
+            }
+            addFunctionOutputMessage(name, results.join("\n"));
+            requester.makeRequest();
         } else if (name === "run_shell_command") {
             if (!args.command || args.command.length === 0) {
                 addFunctionOutputMessage(name, Translation.tr("Invalid arguments. Must provide `command`."));

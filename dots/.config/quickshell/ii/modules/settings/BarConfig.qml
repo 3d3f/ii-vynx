@@ -200,23 +200,29 @@ ContentPage {
 
             ContentSubsection {
                 title: Translation.tr("Group style")
+                tooltip: Translation.tr("Island style makes the group background opaque when bar is transparent")
                 Layout.fillWidth: false
 
                 ConfigSelectionArray {
-                    currentValue: Config.options.bar.borderless
+                    currentValue: Config.options.bar.barGroupStyle
                     onSelected: newValue => {
-                        Config.options.bar.borderless = newValue; // Update local copy
+                        Config.options.bar.barGroupStyle = newValue; // Update local copy
                     }
                     options: [
                         {
                             displayName: Translation.tr("Pills"),
                             icon: "location_chip",
-                            value: false
+                            value: 0
                         },
                         {
-                            displayName: Translation.tr("Line-separated"),
-                            icon: "split_scene",
-                            value: true
+                            displayName: Translation.tr("Island"),
+                            icon: "shadow",
+                            value: 1
+                        },
+                        {
+                            displayName: Translation.tr("Transparent"),
+                            icon: "opacity",
+                            value: 2
                         }
                     ]
                 }
