@@ -24,11 +24,7 @@ Scope {
         {
             id: "brightness",
             sourceUrl: "indicators/BrightnessIndicator.qml"
-        },
-        {
-            id: "playerVolume",
-            sourceUrl: "indicators/PlayerVolumeIndicator.qml"
-        },
+        }
     ]
 
     function triggerOsd() {
