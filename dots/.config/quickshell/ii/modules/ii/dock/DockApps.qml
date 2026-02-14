@@ -79,16 +79,19 @@ Item {
             bottomInset: Appearance.sizes.hyprlandGapsOut + root.buttonPadding
         }
     }
+    
     PopupWindow {
         id: previewPopup
         property var appTopLevel: root.lastHoveredButton?.appToplevel
         property bool allPreviewsReady: false
+        
         Connections {
             target: root
             function onLastHoveredButtonChanged() {
                 previewPopup.allPreviewsReady = false; // Reset readiness when the hovered button changes
             } 
         }
+        
         function updatePreviewReadiness() {
             for(var i = 0; i < previewRowLayout.children.length; i++) {
                 const view = previewRowLayout.children[i];
@@ -99,6 +102,7 @@ Item {
             }
             allPreviewsReady = true;
         }
+        
         property bool shouldShow: {
             const hoverConditions = (popupMouseArea.containsMouse || root.buttonHovered)
             return hoverConditions && allPreviewsReady;
@@ -107,12 +111,12 @@ Item {
 
         onShouldShowChanged: {
             if (shouldShow) {
-                // show = true;
                 updateTimer.restart();
             } else {
                 updateTimer.restart();
             }
         }
+        
         Timer {
             id: updateTimer
             interval: 100
@@ -120,13 +124,14 @@ Item {
                 previewPopup.show = previewPopup.shouldShow
             }
         }
+        
         anchor {
             window: root.QsWindow.window
             adjustment: PopupAdjustment.None
             gravity: Edges.Top | Edges.Right
             edges: Edges.Top | Edges.Left
-
         }
+        
         visible: popupBackground.visible
         color: "transparent"
         implicitWidth: root.QsWindow.window?.width ?? 1
@@ -135,13 +140,21 @@ Item {
         MouseArea {
             id: popupMouseArea
             anchors.bottom: parent.bottom
-            implicitWidth: popupBackground.implicitWidth + Appearance.sizes.elevationMargin * 2
             implicitHeight: root.maxWindowPreviewHeight + root.windowControlsHeight + Appearance.sizes.elevationMargin * 2
             hoverEnabled: true
+            
+            // Max available width
+            property real maxWidth: parent.width - Appearance.sizes.elevationMargin * 4
+            width: Math.min(popupBackground.implicitWidth + Appearance.sizes.elevationMargin * 2, maxWidth)
+            
             x: {
                 const itemCenter = root.QsWindow?.mapFromItem(root.lastHoveredButton, root.lastHoveredButton?.width / 2, 0);
-                return itemCenter.x - width / 2
+                const desiredX = itemCenter.x - width / 2;
+                const maxX = parent.width - width - Appearance.sizes.elevationMargin;
+                const minX = Appearance.sizes.elevationMargin;
+                return Math.max(minX, Math.min(desiredX, maxX));
             }
+            
             StyledRectangularShadow {
                 target: popupBackground
                 opacity: previewPopup.show ? 1 : 0
@@ -150,22 +163,30 @@ Item {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }
             }
+            
             Rectangle {
                 id: popupBackground
                 property real padding: 5
                 opacity: previewPopup.show ? 1 : 0
                 visible: opacity > 0
+                
                 Behavior on opacity {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }
+                
                 clip: true
                 color: Appearance.m3colors.m3surfaceContainer
                 radius: Appearance.rounding.normal
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: Appearance.sizes.elevationMargin
                 anchors.horizontalCenter: parent.horizontalCenter
+                
                 implicitHeight: previewRowLayout.implicitHeight + padding * 2
                 implicitWidth: previewRowLayout.implicitWidth + padding * 2
+                
+                // Limits max width
+                width: Math.min(implicitWidth, popupMouseArea.maxWidth)
+                
                 Behavior on implicitWidth {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }
@@ -176,20 +197,32 @@ Item {
                 RowLayout {
                     id: previewRowLayout
                     anchors.centerIn: parent
+                    spacing: 5
+                    
+                    // Limits layout width
+                    width: Math.min(implicitWidth, popupMouseArea.maxWidth - popupBackground.padding * 2)
+                    
                     Repeater {
                         model: ScriptModel {
                             values: previewPopup.appTopLevel?.toplevels ?? []
                         }
+                        
                         RippleButton {
                             id: windowButton
                             required property var modelData
-                            padding: 0
+                            padding: 0          
+
+                            Layout.fillWidth: true
+                            Layout.maximumWidth: root.maxWindowPreviewWidth
+                            Layout.minimumWidth: 150
+                            
                             middleClickAction: () => {
                                 windowButton.modelData?.close();
                             }
                             onClicked: {
                                 windowButton.modelData?.activate();
                             }
+                            
                             contentItem: ColumnLayout {
                                 implicitWidth: screencopyView.implicitWidth
                                 implicitHeight: screencopyView.implicitHeight
@@ -232,7 +265,10 @@ Item {
                                     captureSource: previewPopup ? windowButton.modelData : null
                                     live: true
                                     paintCursor: true
-                                    constraintSize: Qt.size(root.maxWindowPreviewWidth, root.maxWindowPreviewHeight)
+                                    
+                                    // Uses parent width
+                                    constraintSize: Qt.size(windowButton.width, root.maxWindowPreviewHeight)
+                                    
                                     onHasContentChanged: {
                                         previewPopup.updatePreviewReadiness();
                                     }
