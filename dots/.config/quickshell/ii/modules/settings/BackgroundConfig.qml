@@ -6,6 +6,8 @@ import qs.modules.common.widgets
 
 ContentPage {
     id: page
+    readonly property int index: 3
+    property bool register: parent.register ?? false
     forceWidth: true
     
     property bool allowHeavyLoads: false
@@ -90,6 +92,7 @@ ContentPage {
                 Layout.fillWidth: true
             }
             ConfigSelectionArray {
+                register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.clock.placementStrategy
                 onSelected: newValue => {
@@ -130,6 +133,7 @@ ContentPage {
                 title: Translation.tr("Clock style")
                 Layout.fillWidth: true
                 ConfigSelectionArray {
+                    register: true
                     currentValue: Config.options.background.widgets.clock.style
                     onSelected: newValue => {
                         Config.options.background.widgets.clock.style = newValue;
@@ -153,6 +157,7 @@ ContentPage {
                 title: Translation.tr("Clock style (locked)")
                 Layout.fillWidth: false
                 ConfigSelectionArray {
+                    register: true
                     currentValue: Config.options.background.widgets.clock.styleLocked
                     onSelected: newValue => {
                         Config.options.background.widgets.clock.styleLocked = newValue;
@@ -287,9 +292,6 @@ ContentPage {
             visible: settingsClock.cookiePresent
             title: Translation.tr("Cookie clock settings")
 
-            
-            
-
             ConfigSpinBox {
                 enabled: Config.options.background.widgets.clock.cookie.backgroundStyle !== "shape"
                 icon: "add_triangle"
@@ -355,7 +357,7 @@ ContentPage {
                 
                 ConfigSwitch {
                     buttonIcon: "wand_stars"
-                    text: Translation.tr("Auto style")
+                    text: Translation.tr("Auto style the cookie clock preset")
                     checked: Config.options.background.widgets.clock.cookie.aiStyling
                     onCheckedChanged: {
                         Config.options.background.widgets.clock.cookie.aiStyling = checked;
@@ -380,12 +382,12 @@ ContentPage {
                     options: [
                         {
                             displayName: "Gemini",
-                            icon: "robot",
+                            symbol: "google-gemini-symbolic",
                             value: "gemini"
                         },
                         {
                             displayName: "OpenRouter",
-                            icon: "robot_2",
+                            symbol: "openrouter-symbolic",
                             value: "openrouter"
                         }
                     ]
@@ -682,6 +684,7 @@ ContentPage {
                 Layout.fillWidth: true
             }
             ConfigSelectionArray {
+                register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.weather.placementStrategy
                 onSelected: newValue => {
@@ -729,6 +732,7 @@ ContentPage {
                 Layout.fillWidth: true
             }
             ConfigSelectionArray {
+                register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.media.placementStrategy
                 onSelected: newValue => {
