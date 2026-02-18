@@ -82,10 +82,7 @@ Item {
                         Layout.fillWidth: false
                         Layout.preferredWidth: 30
                         horizontalAlignment: Text.AlignRight
-                        text: Math.round(root.value * 100)
-                        animateChange: true
-                        animationDistanceY: 2 // for faster animation than default
-                        
+                        text: Math.round(root.value * 100)                        
                     }
                 }
                 
