@@ -6,7 +6,6 @@ import qs.modules.common.widgets
 OsdValueIndicator {
     id: osdValues
     value: MprisController.activePlayer?.volume ?? 0
-    icon: "music_note"
-    name: Translation.tr("Music")
-    shape: MaterialShape.Shape.Cookie4Sided
+    icon: Audio.sink?.audio.muted ? "volume_off" : "volume_up"
+    name: Translation.tr("Volume")
 }
