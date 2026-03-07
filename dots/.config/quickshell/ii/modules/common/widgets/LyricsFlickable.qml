@@ -11,12 +11,12 @@ Item {
     id: root
 
     property var player: MprisController.activePlayer
-    property string geniusLyricsString: LyricsService.geniusHasLyrics ? LyricsService.geniusLyrics : ""
+    property string geniusLyricsString: LyricsService.geniusHasLyrics ? LyricsService.plainLyrics : ""
 
     property bool hasSyncedLines: LyricsService.syncedLines.length > 0
 
     Timer {
-        running: root.player?.playbackState == MprisPlaybackState.Playing && hasSyncedLines > 0
+        running: root.player?.playbackState == MprisPlaybackState.Playing && hasSyncedLines
         interval: 250
         repeat: true
         onTriggered: root.player.positionChanged()
@@ -26,7 +26,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 250
         anchors.verticalCenter: parent.verticalCenter
-        loading: geniusFlickable.opacity == 0 && !hasSyncedLines > 0
+        loading: geniusFlickable.opacity == 0 && !hasSyncedLines
         visible: loading
         implicitSize: 96
     }
@@ -35,7 +35,7 @@ Item {
         id: geniusFlickable
         anchors.fill: parent
         
-        opacity: !hasSyncedLines > 0 && LyricsService.geniusHasLyrics ? 1 : 0
+        opacity: !hasSyncedLines && LyricsService.geniusHasLyrics ? 1 : 0
         Behavior on opacity {
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
         }
@@ -45,7 +45,6 @@ Item {
         contentHeight: geniusText.implicitHeight
         interactive: true
 
-        property real userOffset: 0
         property bool isSyncing: true
 
         readonly property real rawTargetY: {
@@ -60,16 +59,25 @@ Item {
             return Math.max(0, targetY - (geniusFlickable.height / 2))
         }
 
+        property real userScrollOffset: Persistent.states.background.mediaMode.userScrollOffset
+        onUserScrollOffsetChanged: {
+            updateScrolling()
+        }
+
         onMovementEnded: {
-            userOffset = contentY - rawTargetY
+            Persistent.states.background.mediaMode.userScrollOffset = contentY - rawTargetY
             isSyncing = true 
         }
 
         onMovementStarted: isSyncing = false
 
         onRawTargetYChanged: {
+            updateScrolling()
+        }
+
+        function updateScrolling() {
             if (isSyncing && !dragging && !flicking) {
-                contentY = Math.min(contentHeight - height, rawTargetY + userOffset)
+                contentY = Math.min(contentHeight - height, rawTargetY + Persistent.states.background.mediaMode.userScrollOffset)
             }
         }
 

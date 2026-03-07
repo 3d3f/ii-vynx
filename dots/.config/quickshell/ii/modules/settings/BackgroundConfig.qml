@@ -67,14 +67,11 @@ ContentPage {
 
             ConfigSwitch {
                 Layout.fillWidth: true
-                buttonIcon: "check"
-                text: Translation.tr("Enable")
-                checked: Config.options.background.mediaMode.enable
+                buttonIcon: "monitor"
+                text: Translation.tr("Toggle per monitor")
+                checked: Config.options.background.mediaMode.togglePerMonitor
                 onCheckedChanged: {
-                    Config.options.background.mediaMode.enable = checked;
-                }
-                StyledToolTip {
-                    text: Translation.tr("Using a keybind instead of this toggle is recommended")
+                    Config.options.background.mediaMode.togglePerMonitor = checked;
                 }
             }
 
@@ -124,14 +121,44 @@ ContentPage {
             }
         }
 
-        ConfigSwitch {
-            buttonIcon: "animation"
-            text: Translation.tr("Enable background animation")
-            checked: Config.options.background.mediaMode.enableBackgroundAnimation
-            onCheckedChanged: {
-                Config.options.background.mediaMode.enableBackgroundAnimation = checked;
+        ConfigRow {
+            ConfigSwitch {
+                Layout.fillWidth: false
+                buttonIcon: "animation"
+                text: Translation.tr("Enable background animation")
+                checked: Config.options.background.mediaMode.backgroundAnimation.enable
+                onCheckedChanged: {
+                    Config.options.background.mediaMode.backgroundAnimation.enable = checked;
+                }
+            }
+
+            ConfigSpinBox {
+                enabled: Config.options.background.mediaMode.backgroundAnimation.enable
+                Layout.fillWidth: true
+                icon: "speed"
+                text: Translation.tr("Speed scale")
+                value: Config.options.background.mediaMode.backgroundAnimation.speedScale
+                from: 0
+                to: 100
+                stepSize: 5
+                onValueChanged: {
+                    Config.options.background.mediaMode.backgroundAnimation.speedScale = value;
+                }
+
+                MouseArea {
+                    z: -1
+                    id: spinBoxMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                }
+
+                StyledToolTip {
+                    extraVisibleCondition: spinBoxMouseArea.containsMouse
+                    text: Translation.tr("1: very slow | 10: default | 20: 2x speed...")
+                }
             }
         }
+        
         ConfigSwitch {
             buttonIcon: "format_color_fill"
             text: Translation.tr("Change shell color to match album art")
@@ -140,6 +167,29 @@ ContentPage {
                 Config.options.background.mediaMode.changeShellColor = checked;
             }
         }
+
+        ContentSubsection {
+            title: Translation.tr("Text highlight style")
+            ConfigSelectionArray {
+                currentValue: Config.options.background.mediaMode.syllable.textHighlightStyle
+                onSelected: newValue => {
+                    Config.options.background.mediaMode.syllable.textHighlightStyle = newValue;
+                }
+                options: [
+                    {   
+                        displayName: Translation.tr("Vertical"),
+                        icon: "vertical_distribute",
+                        value: 0
+                    },
+                    {
+                        displayName: Translation.tr("Horizontal"),
+                        icon: "horizontal_distribute",
+                        value: 1
+                    }
+                ]
+            }
+        }
+        
     }
 
     ContentSection {

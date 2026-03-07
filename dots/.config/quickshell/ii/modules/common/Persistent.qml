@@ -64,6 +64,13 @@ Singleton {
                 property real temperature: 0.5
             }
 
+            property JsonObject background: JsonObject {
+                property JsonObject mediaMode: JsonObject {
+                    property bool enabled: false // just a flag, cannot be changed directly
+                    property real userScrollOffset: 0
+                }
+            }
+
             property JsonObject cheatsheet: JsonObject {
                 property int tabIndex: 0
             }

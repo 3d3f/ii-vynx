@@ -74,9 +74,19 @@ DockButton {
         }
     }
 
+    readonly property bool isSeparator: appToplevel.appId === "SEPARATOR"
+    property var desktopEntry: DesktopEntries.heuristicLookup(appToplevel.appId)
     enabled: !isSeparator
     width:  isSeparator ? (isVertical ? (Config.options?.dock.height ?? 60) * 0.83 : 1) : root.buttonSize
     height: isSeparator ? (isVertical ? 1 : (Config.options?.dock.height ?? 60) * 0.83) : root.buttonSize
+
+    Connections {
+        target: DesktopEntries
+
+        function onApplicationsChanged() {
+            root.desktopEntry = DesktopEntries.heuristicLookup(appToplevel.appId);
+        }
+    }
 
     Loader {
         active: isSeparator
